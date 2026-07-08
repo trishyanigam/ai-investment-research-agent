@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Sparkles, RefreshCw, Newspaper } from 'lucide-react';
+import axios from 'axios';
 import { getStockData } from '../utils/mockData';
 import GlassCard from '../components/GlassCard';
 import StockChart from '../components/StockChart';
@@ -51,6 +52,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isThinking, setIsThinking] = useState(false);
   const [error, setError] = useState(null);
+  const [timelineDone, setTimelineDone] = useState(false);
+  const [pendingStock, setPendingStock] = useState(null);
 
   useEffect(() => {
     if (!symbol) {
@@ -61,24 +64,39 @@ export default function Dashboard() {
     setLoading(true);
     setError(null);
     setIsThinking(true);
+    setTimelineDone(false);
+    setPendingStock(null);
+    setStock(null);
 
-    const fetchTimer = setTimeout(() => {
-      const data = getStockData(symbol);
-      if (!data) {
-        setError(`We couldn't find any financial records or filings matching "${symbol.toUpperCase()}".`);
+    const fetchStockData = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await axios.post(`${apiUrl}/analyze`, {
+          company: symbol
+        });
+        setPendingStock(response.data);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        const errorMsg = err.response?.data?.message || err.message || `We couldn't find any financial records or filings matching "${symbol.toUpperCase()}".`;
+        setError(errorMsg);
         setLoading(false);
         setIsThinking(false);
-      } else {
-        setStock(data);
-        setLoading(false);
       }
-    }, 800);
+    };
 
-    return () => clearTimeout(fetchTimer);
+    fetchStockData();
   }, [symbol]);
 
+  useEffect(() => {
+    if (timelineDone && pendingStock) {
+      setStock(pendingStock);
+      setIsThinking(false);
+    }
+  }, [timelineDone, pendingStock]);
+
   const handleTimelineComplete = () => {
-    setIsThinking(false);
+    setTimelineDone(true);
   };
 
   if (!symbol) {
