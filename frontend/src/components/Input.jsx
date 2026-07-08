@@ -12,6 +12,7 @@ export default function Input({
   rightIcon = null,
   className = '',
   inputClassName = '',
+  inputRef = null,
   ...props
 }) {
   return (
@@ -30,6 +31,7 @@ export default function Input({
         )}
         
         <input
+          ref={inputRef}
           type={type}
           value={value}
           onChange={onChange}

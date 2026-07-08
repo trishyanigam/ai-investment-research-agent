@@ -2,39 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 
-export default function ThinkingTimeline({ steps = [], onComplete = null, isSimulating = true }) {
+export default function ThinkingTimeline({ steps = [], onComplete = null, isLoading = true }) {
   const [activeStep, setActiveStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
 
+  // Controlled stepping animation synchronized with API network loading state
   useEffect(() => {
-    if (!isSimulating) {
-      setCompletedSteps(steps.map((_, idx) => idx));
-      setActiveStep(steps.length);
-      if (onComplete) onComplete();
-      return;
-    }
-
-    setCompletedSteps([]);
-    setActiveStep(0);
-
-    let current = 0;
-    const interval = setInterval(() => {
-      setCompletedSteps((prev) => [...prev, current]);
-      current += 1;
-      setActiveStep(current);
-
-      if (current >= steps.length) {
-        clearInterval(interval);
+    if (activeStep < steps.length - 1) {
+      const timer = setTimeout(() => {
+        setCompletedSteps((prev) => [...prev, activeStep]);
+        setActiveStep((prev) => prev + 1);
+      }, 950); // Duration per simulated thinking step
+      return () => clearTimeout(timer);
+    } else if (activeStep === steps.length - 1 && !isLoading) {
+      const timer = setTimeout(() => {
+        setCompletedSteps((prev) => [...prev, activeStep]);
+        setActiveStep(steps.length);
         if (onComplete) {
-          setTimeout(() => {
-            onComplete();
-          }, 600); // Small pause for visual satisfaction
+          setTimeout(onComplete, 600); // Delay for visual transition satisfaction
         }
-      }
-    }, 900); // Speed of simulated AI thinking trace
-
-    return () => clearInterval(interval);
-  }, [steps, isSimulating]);
+      }, 950);
+      return () => clearTimeout(timer);
+    }
+  }, [activeStep, isLoading, steps.length, onComplete]);
 
   return (
     <div className="space-y-6">

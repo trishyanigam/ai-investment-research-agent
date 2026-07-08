@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, RefreshCw, Newspaper } from 'lucide-react';
+import { ArrowLeft, Sparkles, RefreshCw, Newspaper, PlusCircle, MinusCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { getStockData } from '../utils/mockData';
 import GlassCard from '../components/GlassCard';
@@ -44,6 +45,14 @@ const cardVariants = {
   }
 };
 
+const thinkingSteps = [
+  "Searching Company",
+  "Reading Financial Reports",
+  "Fetching News",
+  "Analyzing Market",
+  "Generating Recommendation"
+];
+
 export default function Dashboard() {
   const { symbol } = useParams();
   const navigate = useNavigate();
@@ -70,18 +79,30 @@ export default function Dashboard() {
 
     const fetchStockData = async () => {
       try {
+        toast.loading(`Analysis Started: Fetching ${symbol.toUpperCase()} metrics...`, { id: 'analysis-toast' });
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
         const response = await axios.post(`${apiUrl}/analyze`, {
           company: symbol
         });
         setPendingStock(response.data);
         setLoading(false);
+        toast.success(`Analysis Complete: ${response.data.name || symbol.toUpperCase()} report generated!`, { id: 'analysis-toast' });
       } catch (err) {
         console.error(err);
-        const errorMsg = err.response?.data?.message || err.message || `We couldn't find any financial records or filings matching "${symbol.toUpperCase()}".`;
-        setError(errorMsg);
+        const status = err.response?.status;
+        const errorMsg = err.response?.data?.message || err.message || `We couldn't find any financial records matching "${symbol.toUpperCase()}".`;
+        
+        setError({ message: errorMsg, status: status });
         setLoading(false);
         setIsThinking(false);
+
+        if (!err.response) {
+          toast.error('Network Error: Failed to connect to server.', { id: 'analysis-toast' });
+        } else if (status === 400 || status === 404) {
+          toast.error(`Invalid Company: Ticker "${symbol.toUpperCase()}" not recognized.`, { id: 'analysis-toast' });
+        } else {
+          toast.error(`API Error: ${errorMsg}`, { id: 'analysis-toast' });
+        }
       }
     };
 
@@ -107,18 +128,10 @@ export default function Dashboard() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] bg-[#030306] bg-grid-pattern pt-8 pb-16">
-        <LoadingSkeleton />
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="min-h-[calc(100vh-4rem)] bg-[#030306] bg-grid-pattern flex items-center justify-center pt-8 pb-16">
-        <ErrorCard message={error} onRetry={() => navigate('/')} />
+        <ErrorCard error={error} onRetry={() => navigate('/')} />
       </div>
     );
   }
@@ -169,6 +182,7 @@ export default function Dashboard() {
           initialValue={symbol}
           placeholder="Search symbol (e.g. NVDA)..."
           className="w-full md:max-w-md"
+          isLoading={isThinking || loading}
         />
       </div>
 
@@ -199,7 +213,7 @@ export default function Dashboard() {
                 </span>
               </div>
               
-              <ThinkingTimeline steps={stock?.timeline} onComplete={handleTimelineComplete} />
+              <ThinkingTimeline steps={thinkingSteps} onComplete={handleTimelineComplete} isLoading={loading} />
             </GlassCard>
           </motion.div>
         ) : (
@@ -219,7 +233,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Recommendation and Confidence Score */}
               <motion.div variants={cardVariants}>
-                <GlassCard className="flex flex-col justify-between items-center text-center p-6 h-full min-h-[380px]">
+                <GlassCard className="flex flex-col justify-between items-center text-center p-6 h-full min-h-[380px] hover:border-white/10 transition-colors">
                   <div className="w-full flex items-center justify-between border-b border-white/5 pb-3">
                     <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">AI Thesis Target</span>
                     <button
@@ -277,36 +291,74 @@ export default function Dashboard() {
 
               {/* Chart Card */}
               <motion.div variants={cardVariants} className="lg:col-span-2">
-                <GlassCard className="p-6 h-full min-h-[380px]">
+                <GlassCard className="p-6 h-full min-h-[380px] hover:border-white/10 transition-colors">
                   <StockChart data={stock?.chartData} ticker={stock?.symbol} />
                 </GlassCard>
               </motion.div>
             </div>
 
             {/* Financial Metrics Grid */}
-            <motion.div variants={cardVariants} className="space-y-4">
-              <h3 className="font-display font-bold text-lg text-white tracking-wide">Financial & Valuation Indicators</h3>
+            <div className="space-y-4">
+              <motion.h3 variants={cardVariants} className="font-display font-bold text-lg text-white tracking-wide">
+                Financial & Valuation Indicators
+              </motion.h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {stock?.metrics.map((metric, i) => (
-                  <MetricCard
-                    key={i}
-                    label={metric.label}
-                    value={metric.value}
-                  />
+                  <motion.div key={i} variants={cardVariants}>
+                    <MetricCard
+                      label={metric.label}
+                      value={metric.value}
+                    />
+                  </motion.div>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
-            {/* Two Column: Pros & Cons vs AI Summary */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Pros vs Cons Cards */}
-              <motion.div variants={cardVariants}>
-                <RiskCard variant="catalysts" data={{ pros: stock?.pros, cons: stock?.cons }} />
-              </motion.div>
-
+            {/* 3-Column Layout: AI Summary, Pros, Cons */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* AI Written Summary */}
               <motion.div variants={cardVariants}>
                 <SummaryCard summaryText={stock?.aiSummary} />
+              </motion.div>
+
+              {/* Pros Catalysts Card */}
+              <motion.div variants={cardVariants}>
+                <GlassCard className="space-y-4 h-full hover:border-white/10 transition-colors">
+                  <div className="border-b border-white/5 pb-3">
+                    <h3 className="font-display font-bold text-lg text-emerald-400 flex items-center gap-2 tracking-wide">
+                      <PlusCircle className="h-5 w-5 shrink-0" />
+                      Pros & Catalysts
+                    </h3>
+                  </div>
+                  <ul className="space-y-3.5">
+                    {stock?.pros?.map((pro, index) => (
+                      <li key={index} className="flex gap-2.5 text-xs sm:text-sm leading-relaxed text-neutral-300 font-normal">
+                        <span className="text-emerald-400 font-bold shrink-0">•</span>
+                        <span>{pro}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </GlassCard>
+              </motion.div>
+
+              {/* Cons Risks Card */}
+              <motion.div variants={cardVariants}>
+                <GlassCard className="space-y-4 h-full hover:border-white/10 transition-colors">
+                  <div className="border-b border-white/5 pb-3">
+                    <h3 className="font-display font-bold text-lg text-rose-400 flex items-center gap-2 tracking-wide">
+                      <MinusCircle className="h-5 w-5 shrink-0" />
+                      Cons & Risks
+                    </h3>
+                  </div>
+                  <ul className="space-y-3.5">
+                    {stock?.cons?.map((con, index) => (
+                      <li key={index} className="flex gap-2.5 text-xs sm:text-sm leading-relaxed text-neutral-300 font-normal">
+                        <span className="text-rose-400 font-bold shrink-0">•</span>
+                        <span>{con}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </GlassCard>
               </motion.div>
             </div>
 
@@ -324,17 +376,19 @@ export default function Dashboard() {
             </div>
 
             {/* News and Sentiment Section */}
-            <motion.div variants={cardVariants} className="space-y-4">
-              <h3 className="font-display font-bold text-lg text-white flex items-center gap-2 tracking-wide">
+            <div className="space-y-4">
+              <motion.h3 variants={cardVariants} className="font-display font-bold text-lg text-white flex items-center gap-2 tracking-wide">
                 <Newspaper className="h-5 w-5 text-cyan-400" />
                 Aggregated News Sentiment Feed
-              </h3>
+              </motion.h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {stock?.news.map((item) => (
-                  <NewsCard key={item.id} item={item} />
+                  <motion.div key={item.id} variants={cardVariants}>
+                    <NewsCard item={item} />
+                  </motion.div>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
           </motion.div>
         )}
