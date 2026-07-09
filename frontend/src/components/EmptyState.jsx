@@ -1,9 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, TrendingUp, BarChart3, LineChart } from 'lucide-react';
+import { Sparkles, TrendingUp, LineChart } from 'lucide-react';
 import SearchBar from './SearchBar';
-import GlassCard from './GlassCard';
 
 export default function EmptyState() {
   const navigate = useNavigate();

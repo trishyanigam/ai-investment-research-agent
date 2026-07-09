@@ -1,4 +1,3 @@
-import React from 'react';
 import { BookOpen, Calendar } from 'lucide-react';
 import GlassCard from './GlassCard';
 

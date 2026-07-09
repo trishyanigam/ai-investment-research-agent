@@ -8,7 +8,14 @@ const notFound = require("./middleware/notFound");
 
 const app = express();
 
-app.use(cors());
+const corsOptions = {
+  origin: env.NODE_ENV === 'production' && env.FRONTEND_URL ? [env.FRONTEND_URL] : '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(logger);
 

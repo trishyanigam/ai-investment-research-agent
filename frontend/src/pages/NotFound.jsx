@@ -1,7 +1,6 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { HelpCircle, ArrowLeft, Cpu } from 'lucide-react';
+import { HelpCircle, ArrowLeft } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 
 export default function NotFound() {

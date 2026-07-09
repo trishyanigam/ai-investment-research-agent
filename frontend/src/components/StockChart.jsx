@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -8,6 +8,21 @@ import {
   Tooltip,
   CartesianGrid
 } from 'recharts';
+
+// Custom tooltips with Glassmorphism matching the Stripe/Vercel dashboard theme
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="glass rounded-lg p-3 text-xs shadow-xl border border-white/10">
+        <p className="text-neutral-400 font-medium mb-1">{payload[0].payload.date}</p>
+        <p className="text-cyan-400 font-bold font-display text-sm">
+          ${payload[0].value.toFixed(2)}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function StockChart({ data = [], ticker = 'AAPL' }) {
   const [timeframe, setTimeframe] = useState('1M');
@@ -44,21 +59,6 @@ export default function StockChart({ data = [], ticker = 'AAPL' }) {
   };
 
   const chartPoints = getSimulatedData();
-
-  // Custom tooltips with Glassmorphism matching the Stripe/Vercel dashboard theme
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="glass rounded-lg p-3 text-xs shadow-xl border border-white/10">
-          <p className="text-neutral-400 font-medium mb-1">{payload[0].payload.date}</p>
-          <p className="text-cyan-400 font-bold font-display text-sm">
-            ${payload[0].value.toFixed(2)}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="flex flex-col h-full space-y-4">

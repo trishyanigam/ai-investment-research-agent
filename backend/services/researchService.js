@@ -8,13 +8,20 @@ const aiService = require('./aiService');
  * @returns {Promise<object>}
  */
 exports.analyzeCompany = async (query) => {
-  // 1. Resolve company symbol and fetch financial metrics
-  const companyData = await companyService.getCompanyData(query);
+  let symbol = query;
+  try {
+    symbol = await companyService.resolveSymbol(query);
+  } catch (err) {
+    console.warn(`Symbol resolution failed during preprocessing: ${err.message}`);
+  }
+
+  // Fetch financial metrics and recent news concurrently
+  const [companyData, newsArticles] = await Promise.all([
+    companyService.getCompanyData(symbol),
+    newsService.getLatestNews(symbol)
+  ]);
   
-  // 2. Fetch recent news articles
-  const newsArticles = await newsService.getLatestNews(companyData.symbol || query);
-  
-  // 3. Send all data to Gemini model via LangChain and compile report
+  // Send all data to Gemini model via LangChain and compile report
   const analysisResult = await aiService.analyzeAndStructure(companyData, newsArticles);
   
   return analysisResult;

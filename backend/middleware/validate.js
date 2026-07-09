@@ -7,10 +7,10 @@ const { HTTP_STATUS } = require('../config/constants');
 exports.validateAnalyzeRequest = (req, res, next) => {
   const { company } = req.body;
 
-  if (!company || typeof company !== 'string' || company.trim().length === 0) {
+  if (!company || typeof company !== 'string' || company.trim().length === 0 || company.trim().length > 80) {
     return next(
       new AppError(
-        'Invalid payload: The "company" field is required and must be a non-empty string.',
+        'Invalid payload: The "company" field is required and must be a non-empty string under 80 characters.',
         HTTP_STATUS.BAD_REQUEST
       )
     );

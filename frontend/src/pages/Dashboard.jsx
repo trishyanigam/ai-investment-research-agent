@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Sparkles, RefreshCw, Newspaper, PlusCircle, MinusCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
-import { getStockData } from '../utils/mockData';
+import api from '../utils/api';
 import GlassCard from '../components/GlassCard';
 import StockChart from '../components/StockChart';
 import ThinkingTimeline from '../components/ThinkingTimeline';
-import LoadingSkeleton from '../components/LoadingSkeleton';
 import EmptyState from '../components/EmptyState';
 
 // Import Reusable Extracted Components
@@ -80,8 +78,7 @@ export default function Dashboard() {
     const fetchStockData = async () => {
       try {
         toast.loading(`Analysis Started: Fetching ${symbol.toUpperCase()} metrics...`, { id: 'analysis-toast' });
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        const response = await axios.post(`${apiUrl}/analyze`, {
+        const response = await api.post('/analyze', {
           company: symbol
         });
         setPendingStock(response.data);

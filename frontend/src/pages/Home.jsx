@@ -1,5 +1,3 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Sparkles,
@@ -15,7 +13,6 @@ import GlassCard from '../components/GlassCard';
 import SearchBar from '../components/SearchBar';
 
 export default function Home() {
-  const navigate = useNavigate();
 
   const revealVariants = {
     hidden: { opacity: 0, y: 35 },
