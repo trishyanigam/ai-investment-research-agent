@@ -141,18 +141,8 @@ ai-investment-research-agent/
 ## 📸 Demo & Screenshots
 
 ### Live Demo Links
-*   🌐 **Frontend URL:** [https://ai-investment-research-agent-demo.vercel.app](https://github.com/trishyanigam/ai-investment-research-agent) *(Placeholder)*
-*   ⚙️ **Backend API URL:** [https://ai-investment-research-agent-api.herokuapp.com](https://github.com/trishyanigam/ai-investment-research-agent) *(Placeholder)*
-
-### App Previews
-
-| Homepage (Search Console) | Analysis & Thinking Timeline |
-| :---: | :---: |
-| ![Homepage Placeholder](https://raw.githubusercontent.com/trishyanigam/ai-investment-research-agent/main/frontend/public/homepage_placeholder.png) | ![Thinking Timeline Placeholder](https://raw.githubusercontent.com/trishyanigam/ai-investment-research-agent/main/frontend/public/thinking_placeholder.png) |
-
-| Financial Dashboard & Charts | Sentiment & Risk Cards |
-| :---: | :---: |
-| ![Dashboard Dashboard](https://raw.githubusercontent.com/trishyanigam/ai-investment-research-agent/main/frontend/public/dashboard_placeholder.png) | ![Sentiment Dashboard](https://raw.githubusercontent.com/trishyanigam/ai-investment-research-agent/main/frontend/public/sentiment_placeholder.png) |
+*   🌐 **Frontend URL:** [https://ai-investment-research-agent-ashy.vercel.app/]
+*   ⚙️ **Backend API URL:** [https://ai-investment-research-backend.onrender.com]
 
 ---
 
